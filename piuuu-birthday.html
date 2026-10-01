@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Happy Birthday, Puchki 🎂</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blush:#ffd9e2;--lav:#e3d9ff;--cream:#fff8ee;--peach:#ffe2cc;--sky:#d4e8ff;--ink:#4a3a5c;--soft:#7a6a8c;--accent:#b48cf0;--hot:#ff8fab;
+--disp:'Fraunces',Georgia,serif;--body:'Quicksand',system-ui,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0;overflow-x:hidden}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{font-family:var(--body);color:var(--ink);background:var(--cream);-webkit-tap-highlight-color:transparent}
+.bg{position:fixed;inset:0;z-index:0;background:
+radial-gradient(60% 40% at 15% 10%,var(--lav),transparent 70%),
+radial-gradient(55% 40% at 90% 25%,var(--blush),transparent 70%),
+radial-gradient(60% 45% at 20% 95%,var(--sky),transparent 70%),
+radial-gradient(50% 40% at 95% 90%,var(--peach),transparent 70%),var(--cream);animation:drift 14s ease-in-out infinite alternate}
+@keyframes drift{to{filter:hue-rotate(12deg) saturate(1.08)}}
+#floaters{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.fl{position:absolute;bottom:-30px;opacity:0;animation:rise linear infinite;color:var(--accent)}
+@keyframes rise{0%{transform:translateY(0) rotate(0);opacity:0}15%{opacity:.7}85%{opacity:.5}100%{transform:translateY(-110vh) rotate(180deg);opacity:0}}
+#app{position:relative;z-index:2;min-height:100svh;display:flex;flex-direction:column;overflow:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 0;min-height:48px}
+#prog{display:flex;gap:6px;color:var(--accent);font-size:15px;letter-spacing:2px}
+#prog span{opacity:.3;transition:.4s}#prog span.on{opacity:1;transform:scale(1.2)}
+#music{display:none;border:0;background:#ffffffaa;color:var(--ink);font:600 13px var(--body);min-height:44px;padding:0 14px;border-radius:22px;box-shadow:0 4px 14px #b48cf033;cursor:pointer}
+#music.show{display:block}
+main{flex:1;position:relative;display:flex}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px 22px 28px;opacity:0;visibility:hidden;transform:translateY(24px) scale(.98);transition:opacity .6s,transform .6s,visibility .6s;overflow-y:auto}
+.screen.active{opacity:1;visibility:visible;transform:none}
+.screen>*{max-width:420px;width:100%}
+h1,h2,.big{font-family:var(--disp);font-weight:700;line-height:1.12;margin:0 0 12px;letter-spacing:-.01em}
+h1{font-size:clamp(30px,9vw,40px)}h2{font-size:clamp(26px,8vw,34px)}
+.big{font-size:clamp(34px,11vw,48px)}
+p{margin:0 0 12px;font-size:clamp(16px,4.4vw,18px);line-height:1.6;font-weight:500}
+.small{color:var(--soft);font-size:15px}
+.card{background:#ffffffcc;backdrop-filter:blur(8px);border-radius:28px;padding:24px 22px;box-shadow:0 14px 40px #b48cf033;text-align:left}
+.card p{font-size:clamp(15.5px,4.2vw,17px)}
+.btn{margin-top:18px;min-height:56px;padding:0 28px;border:0;border-radius:30px;font:700 clamp(16px,4.4vw,18px) var(--body);color:#fff;cursor:pointer;background:linear-gradient(135deg,#b48cf0,#ff8fab);box-shadow:0 10px 24px #b48cf055;transition:transform .15s,box-shadow .15s;width:auto}
+.btn:active{transform:scale(.94);box-shadow:0 4px 10px #b48cf055}
+@media(hover:hover){.btn:hover{transform:translateY(-2px) scale(1.03)}}
+.btn:focus-visible,#music:focus-visible,.spark:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.pulse{animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.line{opacity:0;transform:translateY(12px);animation:in .7s forwards}
+@keyframes in{to{opacity:1;transform:none}}
+.d1{animation-delay:.3s}.d2{animation-delay:1.3s}.d3{animation-delay:2.4s}
+.screen:not(.active) .line{animation:none;opacity:0}
+.cake{font-size:76px;line-height:1;display:inline-block;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(4deg)}}
+.pop{display:inline-block;animation:pop .8s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+/* polaroids */
+.pols{display:flex;justify-content:center;gap:12px;margin-bottom:16px}
+.pol{background:#fff;padding:8px 8px 22px;border-radius:10px;box-shadow:0 8px 20px #4a3a5c22;width:128px;aspect-ratio:3/4}
+.pol:nth-child(1){transform:rotate(-5deg)}.pol:nth-child(2){transform:rotate(4deg)}
+.pol .ph{height:100%;border-radius:6px;background:linear-gradient(135deg,var(--lav),var(--blush));display:grid;place-items:center;font-size:12px;color:var(--soft);overflow:hidden}
+.pol img{width:100%;height:100%;object-fit:cover}
+/* envelope */
+.env{position:relative;width:220px;height:150px;margin:6px auto 4px;background:var(--peach);border-radius:16px;box-shadow:0 12px 30px #ff8fab33;transition:transform .5s}
+.env .flap{position:absolute;left:0;top:0;width:100%;height:80px;background:#ffcfae;clip-path:polygon(0 0,100% 0,50% 100%);border-radius:16px 16px 0 0;transform-origin:top;transition:transform .6s;z-index:2}
+.env .seal{position:absolute;left:50%;top:60px;transform:translateX(-50%);font-size:26px;z-index:3;transition:opacity .3s}
+.env.open .flap{transform:rotateX(180deg);z-index:0}.env.open .seal{opacity:0}.env.open{transform:translateY(8px)}
+.reveal p{font-family:var(--disp);font-size:clamp(20px,6vw,25px);line-height:1.35;font-weight:500}
+/* wish */
+#dim{position:fixed;inset:0;z-index:5;background:#2a1f45cc;opacity:0;pointer-events:none;transition:opacity .8s}
+#dim.on{opacity:1;pointer-events:auto}
+#wishStage{position:fixed;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:24px;opacity:0;pointer-events:none;transition:opacity .6s}
+#wishStage.on{opacity:1;pointer-events:auto}
+#wishStage h2{font-size:clamp(22px,7vw,30px);max-width:340px}
+.flame{font-size:54px;animation:flick .5s ease-in-out infinite alternate;filter:drop-shadow(0 0 14px #ffd27a)}
+@keyframes flick{to{transform:scale(1.12) rotate(4deg)}}
+.cake2{font-size:90px;margin-top:-18px}
+#after{opacity:0;transition:opacity 1s}#after.on{opacity:1}
+.conf{position:fixed;top:-12px;z-index:7;width:9px;height:14px;border-radius:2px;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translate3d(var(--dx),110vh,0) rotate(var(--r))}}
+.spark{border:0;background:none;font-size:22px;min-width:44px;min-height:44px;cursor:pointer;color:var(--accent);animation:tw 2.4s ease-in-out infinite}
+@keyframes tw{50%{transform:scale(1.3) rotate(20deg);opacity:.6}}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);z-index:9;background:var(--ink);color:#fff;padding:14px 20px;border-radius:20px;font-weight:600;font-size:15px;opacity:0;transition:.4s;width:max-content;max-width:90%;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.tap{position:fixed;z-index:8;pointer-events:none;font-size:18px;animation:tapfx .7s forwards}
+@keyframes tapfx{to{transform:translateY(-34px) scale(1.6);opacity:0}}
+textarea{width:100%;margin-top:14px;border:2px solid #fff;border-radius:20px;padding:14px 16px;font:500 16px/1.5 var(--body);color:var(--ink);background:#ffffffcc;resize:none;box-shadow:0 8px 24px #b48cf022}
+textarea:focus{outline:3px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px}
+.chip{min-height:44px;padding:0 16px;border:0;border-radius:22px;background:var(--lav);color:var(--ink);font:600 15px var(--body);cursor:pointer;transition:transform .15s}
+.chip:active{transform:scale(.93)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}#floaters{display:none}.line{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div id="floaters" aria-hidden="true"></div>
+<div id="app">
+  <div class="top"><div id="prog" aria-hidden="true"></div><button id="music" aria-label="Play birthday soundtrack">🎵 little birthday soundtrack</button></div>
+  <main id="screens"></main>
+</div>
+<div id="dim"></div>
+<div id="wishStage" role="status" aria-live="polite"></div>
+<div id="toast" role="status"></div>
+<audio id="audio" loop preload="metadata"></audio>
+
+<script>
+/* ============ EDIT EVERYTHING HERE ============ */
+const CONFIG = {
+  name: "Ishita", nickname: "Piuuu", teasing: "Puchki",
+  audio: "",                 // e.g. "birthday.mp3" (leave empty to hide music button)
+  photos: { childhood: "", recent: "" },   // image URLs or data: URIs (optional)
+  intro: { pre: "pssst… 👀", line: "Ei, shuncho? Aaj ekjoner birthday…", btn: "tap kor, dekhi ✨" },
+  reveal: { a: "OMMA… WAIT!", b: "AAJ PUCHKI-R BIRTHDAY! 🎂", sub: "Ishita bole dakbo? Na na, Piuuu-i bhalo. Ar jhogra korle toh Puchki 😜", btn: "Okayyy, celebrate kori →" },
+  card: {
+    title: "Happy Birthday, Piuuu! 🎀",
+    sub: "Amar childhood-er shobcheye cute chapter-ke…",
+    body: [
+      "Chhotobela-r ulto-palta memories theke shuru kore eto pagolami pereo ekhono ekshonge achi — eta kintu sotti-i special, janis? 😌",
+      "Tui boro hoyechis, onek change hoyechis, aro beshi amazing (ar ektu beshi pretty, ahem) hoyechis… tobuo moddhe moddhe ekdom sei Puchki-i achis. 😭😂",
+      "Ei bochhor-ta tor jonno hok khushi, bhalo bhalo memories, notun adventure, ar jaa jaa chaiyechish shob. 🌸",
+      "Hashte thak, pagol thak, ar ekdom nijer moto thak.",
+      "Happy Birthday, Ishita! 🫶🏻✨"],
+    btn: "Next →"
+  },
+  memory: { title: "Okay, ekta chhoto throwback…", btn: "Khol dekhi 👀",
+    lines: ["Kichu manush amader childhood memories-er part…", "…ar kichu manush-i ashol memory. 🥹", "Tui na thakle amar childhood boring hoto, Puchki 😌"], next: "Next →" },
+  wish: { pre: "Jawar aage…", btn: "Ekta Wish Kor ✨", done: "✨ Wish universe-e pathiye dilam ✨",
+    after: "Ebar ja, birthday girl — aaj shob tor-i. Mojay thak! 😌🎂", next: "Shesh kotha →" },
+  final: { title: "Happy Birthday, Piuuu 💗", sub: "Ar ekta bochhor, ar ekbar ekdom nijer moto jhokjhoke thakar 😎",
+    from: "— tor childhood-er chaos partner :)",
+    smile: "Smile-ta dhore rakh, tui hashle sotti-i onek bhalo lage. 😌",
+    btn: "Reply koro 💌", footer: "Made with too many childhood memories ✨" },
+  reply: { title: "Tor reply-ta shunte chai 💌", sub: "Kichu ekta likhe pathiye de… ami wait korchi 👀",
+    chips: ["Thank you 🥹", "Treat kothay? 😜", "Pagol! 😂"], placeholder: "Ki bolbi bol…", btn: "Pathiye de ✨",
+    whatsapp: "",            // your number with country code, e.g. "919XXXXXXXXX". Empty = share sheet / copy
+    sent: "Reply ready! Pathiye de 💌", replay: "Replay ✨" },
+  easter: "okay okay… birthday privileges unlocked 👀✨"
+};
+/* ================================================ */
+
+const C = CONFIG, $ = s => document.querySelector(s);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc = t => t;
+const photo = (src, label) => `<div class="pol"><div class="ph">${src ? `<img src="${src}" alt="${label}" loading="lazy" onerror="this.parentNode.innerHTML='🖼️'">` : label}</div></div>`;
+const hasPhotos = C.photos.childhood || C.photos.recent;
+
+const screens = [
+ `<h1 class="line d1">${C.intro.pre}</h1><p class="line d2" style="font-size:22px">${C.intro.line}</p><button class="btn pulse line d3" data-next>${C.intro.btn}</button>`,
+ `<div class="cake pop" aria-hidden="true">🎂</div><p class="small line d1" style="margin-top:14px">${C.reveal.a}</p><h1 class="line d1">${C.reveal.b}</h1><p class="small line d2">${C.reveal.sub}</p><button class="btn line d3" data-next data-confetti>${C.reveal.btn}</button>`,
+ `${hasPhotos ? `<div class="pols">${photo(C.photos.childhood,'then')}${photo(C.photos.recent,'now')}</div>` : ''}<div class="card"><h2>${C.card.title}</h2><p class="small" style="font-style:italic">${C.card.sub}</p>${C.card.body.map(t=>`<p>${t}</p>`).join('')}</div><button class="btn" data-next>${C.card.btn}</button>`,
+ `<h2>${C.memory.title}</h2><div class="env" id="env" aria-hidden="true"><div class="flap"></div><div class="seal">🎀</div></div><button class="btn" id="openMem">${C.memory.btn}</button><div class="reveal" id="memText" aria-live="polite" style="margin-top:14px"></div><button class="btn line" id="memNext" data-next style="display:none">${C.memory.next}</button>`,
+ `<h2 class="line d1">${C.wish.pre}</h2><button class="btn pulse line d2" id="wishBtn" style="min-height:72px;font-size:20px">${C.wish.btn}</button>`,
+ `<div class="big line d1">${C.final.title}</div><p class="line d2">${C.final.sub}</p><p class="line d3" style="font-weight:700;color:var(--accent)">${C.final.smile}</p><p class="line d3">${C.final.from}</p><button class="btn" data-next>${C.final.btn}</button><p class="small" style="margin-top:22px">${C.final.footer} <button class="spark" id="egg" aria-label="tiny sparkle">✦</button></p>`,
+ `<h2>${C.reply.title}</h2><p class="small">${C.reply.sub}</p><div class="chips">${C.reply.chips.map(c=>`<button class="chip" type="button">${c}</button>`).join('')}</div><textarea id="msg" rows="4" maxlength="400" aria-label="Your reply" placeholder="${C.reply.placeholder}"></textarea><button class="btn" id="send">${C.reply.btn}</button><button class="spark" id="replay" style="font:600 14px var(--body);color:var(--soft);margin-top:10px;animation:none">${C.reply.replay}</button>`
+];
+
+const main = $('#screens'), prog = $('#prog');
+screens.forEach((h, i) => { const s = document.createElement('section'); s.className = 'screen'; s.innerHTML = h; main.appendChild(s); prog.innerHTML += `<span>✦</span>`; });
+let cur = 0;
+function go(n) {
+  cur = n;
+  [...main.children].forEach((s, i) => s.classList.toggle('active', i === n));
+  [...prog.children].forEach((s, i) => s.classList.toggle('on', i <= n));
+  main.children[n].scrollTop = 0;
+}
+
+/* floaters */
+const fl = $('#floaters'), icons = ['✦','✧','♡','·','✨','○'];
+if (!reduce) for (let i = 0; i < 14; i++) {
+  const e = document.createElement('span'); e.className = 'fl'; e.textContent = icons[i % icons.length];
+  e.style.cssText = `left:${Math.random()*100}%;font-size:${10+Math.random()*14}px;animation-duration:${14+Math.random()*14}s;animation-delay:${-Math.random()*20}s;color:${['#b48cf0','#ff8fab','#8fc3ff','#ffb98a'][i%4]}`;
+  fl.appendChild(e);
+}
+
+/* confetti */
+function confetti(n = 50) {
+  if (reduce) return;
+  const cols = ['#ff8fab','#b48cf0','#8fc3ff','#ffc9a3','#ffe27a'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('i'); c.className = 'conf';
+    c.style.cssText = `left:${Math.random()*100}%;background:${cols[i%5]};--dx:${(Math.random()-.5)*160}px;--r:${Math.random()*720}deg;animation-duration:${2+Math.random()*2}s;animation-delay:${Math.random()*.4}s`;
+    document.body.appendChild(c); setTimeout(() => c.remove(), 4800);
+  }
+}
+/* tap feedback */
+document.addEventListener('pointerdown', e => {
+  if (!e.target.closest('.btn')) return;
+  if (navigator.vibrate) navigator.vibrate(12);
+  if (reduce) return;
+  const t = document.createElement('span'); t.className = 'tap'; t.textContent = '✨';
+  t.style.left = e.clientX - 9 + 'px'; t.style.top = e.clientY - 9 + 'px';
+  document.body.appendChild(t); setTimeout(() => t.remove(), 700);
+});
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2800); }
+
+/* wiring */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-next]'); if (!b) return;
+  if (b.hasAttribute('data-confetti')) confetti(60);
+  go(Math.min(cur + 1, screens.length - 1));
+});
+
+let memDone = false;
+$('#openMem').onclick = e => {
+  if (memDone) return; memDone = true;
+  e.target.style.display = 'none'; $('#env').classList.add('open');
+  const box = $('#memText'), L = C.memory.lines, gaps = [500, 2600, 4700];
+  L.forEach((t, i) => setTimeout(() => {
+    const p = document.createElement('p'); p.className = 'line'; p.textContent = t;
+    if (i === 2) p.style.cssText = 'font-size:18px;font-family:var(--body);font-weight:700;color:var(--accent)';
+    box.appendChild(p);
+  }, reduce ? i * 50 : gaps[i]));
+  setTimeout(() => { const n = $('#memNext'); n.style.display = 'inline-block'; }, reduce ? 200 : 6200);
+};
+
+let wished = false;
+$('#wishBtn').onclick = () => {
+  if (wished) return; wished = true;
+  const st = $('#wishStage');
+  st.innerHTML = `<div class="flame" aria-hidden="true">🔥</div><div class="cake2" aria-hidden="true">🎂</div><h2 style="margin-top:18px">${C.wish.done}</h2><div id="after"><p>${C.wish.after}</p><button class="btn" id="wishNext">${C.wish.next}</button></div>`;
+  $('#dim').classList.add('on'); st.classList.add('on');
+  [0, 700, 1500].forEach(t => setTimeout(() => confetti(45), t + 600));
+  setTimeout(() => $('#after').classList.add('on'), 2200);
+  $('#wishNext').onclick = () => { $('#dim').classList.remove('on'); st.classList.remove('on'); go(5); };
+};
+
+let taps = 0;
+$('#egg').onclick = () => { if (++taps === 5) { taps = 0; toast(C.easter); confetti(40); } };
+
+$('#replay').onclick = () => location.reload();
+document.querySelectorAll('.chip').forEach(c => c.onclick = () => { const m = $('#msg'); m.value = (m.value ? m.value + ' ' : '') + c.textContent; m.focus(); });
+$('#send').onclick = async () => {
+  const t = $('#msg').value.trim(); if (!t) { $('#msg').focus(); return; }
+  const text = `Piuuu/Ishita-r reply: ${t}`;
+  confetti(30);
+  if (C.reply.whatsapp) { location.href = `https://wa.me/${C.reply.whatsapp}?text=${encodeURIComponent(t)}`; return; }
+  try { if (navigator.share) { await navigator.share({ text }); return; } } catch (e) { return; }
+  try { await navigator.clipboard.writeText(text); toast(C.reply.sent); } catch (e) { toast('Copy kore pathiye de 💌'); }
+};
+
+/* music: hidden unless a working audio file is set */
+if (C.audio) {
+  const a = $('#audio'), m = $('#music'); a.src = C.audio;
+  a.addEventListener('loadedmetadata', () => m.classList.add('show'), { once: true });
+  a.addEventListener('error', () => m.classList.remove('show'));
+  m.onclick = () => { if (a.paused) { a.play().catch(() => {}); m.setAttribute('aria-label', 'Pause soundtrack'); } else { a.pause(); m.setAttribute('aria-label', 'Play birthday soundtrack'); } };
+  a.load();
+}
+go(0);
+</script>
+</body>
+</html>

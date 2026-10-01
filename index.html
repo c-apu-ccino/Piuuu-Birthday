@@ -248,5 +248,198 @@ if (C.audio) {
 }
 go(0);
 </script>
+<!-- ================= AUDIO SYSTEM v4 (self-contained: paste before </body>) ================= -->
+<style>
+#music{display:none!important}
+.abtn{border:0;background:#ffffffaa;color:var(--ink);font:600 13px var(--body);min-height:44px;padding:0 14px;border-radius:22px;box-shadow:0 4px 14px #b48cf033;cursor:pointer}
+.abtn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+</style>
+<script>
+(() => {
+  /* ===== EASY SETTINGS ===== */
+  const MUSIC_VOLUME = 0.16;        // recommended 0.12 – 0.20
+  const MUSIC_FILE = "";            // optional: your own looping track, e.g. "sounds/music.mp3" (also honours CONFIG.audio)
+  /* With no file, a soft generative score plays: piano + warm pads + gentle guitar-style arpeggios + bells + bass + tiny shaker.
+     It is one continuous loop-free piece, so it never restarts between screens. */
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} };
+  let musicOn = store('piuuu-music') !== 'off', sfxOn = store('piuuu-sfx') !== 'off';
+  let ctx, comp, conv, noiseBuf, musicBus, sfxBus, playing = false, timer = null, nextBar = 0, barIdx = 0, started = false;
+  const BPM = 72, beat = 60 / BPM, h = () => (Math.random() - .5) * .03, pick = a => a[Math.floor(Math.random() * a.length)];
+
+  /* ---------- engine ---------- */
+  function mk(vol, wet) {
+    const g = ctx.createGain(); g.gain.value = vol; g.connect(comp);
+    const w = ctx.createGain(); w.gain.value = wet; g.connect(w); w.connect(conv); return g;
+  }
+  function init() {
+    if (ctx) return ctx;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+      ctx = new AC();
+      comp = ctx.createDynamicsCompressor(); comp.connect(ctx.destination);
+      conv = ctx.createConvolver(); const n = ctx.sampleRate * 2.4, ib = ctx.createBuffer(2, n, ctx.sampleRate);
+      for (let c = 0; c < 2; c++) { const d = ib.getChannelData(c); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6); }
+      conv.buffer = ib; const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3500; conv.connect(lp); lp.connect(comp);
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate); const nd = noiseBuf.getChannelData(0);
+      for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+      musicBus = mk(0, .35); sfxBus = mk(1, .5);
+    } catch (e) { ctx = null; }
+    return ctx;
+  }
+  function pluck(o, t, f, d, g, { lp = 2600, type = 'triangle', harm = .3 } = {}) {
+    const v = ctx.createGain(), l = ctx.createBiquadFilter(); l.type = 'lowpass'; l.frequency.value = lp;
+    v.gain.setValueAtTime(.0001, t); v.gain.exponentialRampToValueAtTime(g, t + .008); v.gain.exponentialRampToValueAtTime(.0001, t + d);
+    v.connect(l); l.connect(o);
+    [[type, f, 1], ['sine', f * 2, harm]].forEach(([ty, fr, k]) => {
+      if (!k) return; const os = ctx.createOscillator(), a = ctx.createGain();
+      os.type = ty; os.frequency.value = fr; os.detune.value = (Math.random() - .5) * 8; a.gain.value = k;
+      os.connect(a); a.connect(v); os.start(t); os.stop(t + d + .05);
+    });
+  }
+  function bell(o, t, f, d, g) {
+    [[1, 1], [2.76, .18], [5.4, .06]].forEach(([r, k]) => {
+      const os = ctx.createOscillator(), v = ctx.createGain(); os.type = 'sine'; os.frequency.value = f * r;
+      v.gain.setValueAtTime(.0001, t); v.gain.exponentialRampToValueAtTime(g * k, t + .01); v.gain.exponentialRampToValueAtTime(.0001, t + d / (r > 1 ? 2 : 1));
+      os.connect(v); v.connect(o); os.start(t); os.stop(t + d + .05);
+    });
+  }
+  function pad(o, t, fs, d, g) {
+    const l = ctx.createBiquadFilter(); l.type = 'lowpass'; l.frequency.value = 900;
+    const v = ctx.createGain(); v.gain.setValueAtTime(.0001, t); v.gain.linearRampToValueAtTime(g, t + 1.4);
+    v.gain.setValueAtTime(g, t + d - 1.4); v.gain.linearRampToValueAtTime(.0001, t + d); l.connect(v); v.connect(o);
+    fs.forEach(f => [-7, 7].forEach(c => { const os = ctx.createOscillator(); os.type = 'triangle'; os.frequency.value = f; os.detune.value = c; os.connect(l); os.start(t); os.stop(t + d + .05); }));
+  }
+  function puff(o, t, d, g, type, fr) {
+    const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), v = ctx.createGain();
+    s.buffer = noiseBuf; s.playbackRate.value = .8 + Math.random() * .4; f.type = type; f.frequency.value = fr;
+    v.gain.setValueAtTime(.0001, t); v.gain.exponentialRampToValueAtTime(g, t + .01); v.gain.exponentialRampToValueAtTime(.0001, t + d);
+    s.connect(f); f.connect(v); v.connect(o); s.start(t); s.stop(t + d + .05);
+  }
+
+  /* ---------- the soundtrack: C → Am → F → G, ~72 BPM, endless ---------- */
+  const CH = [
+    { b: 130.81, n: [261.63, 329.63, 392, 493.88] },   // Cmaj7
+    { b: 110,    n: [220, 261.63, 329.63, 392] },       // Am7
+    { b: 87.31,  n: [174.61, 220, 261.63, 329.63] },    // Fmaj7
+    { b: 98,     n: [196, 246.94, 293.66, 329.63] }     // G6
+  ];
+  const MEL = [
+    [[0, 659.25], [1.5, 783.99], [2.5, 880], [3.5, 783.99]],
+    [[0, 659.25], [1, 523.25], [2, 659.25], [3, 587.33]],
+    [[0, 523.25], [1.5, 659.25], [2.5, 698.46], [3.5, 659.25]],
+    [[0, 587.33], [1, 659.25], [2, 783.99], [3.5, 880]]
+  ];
+  const HI = [1046.5, 1318.5, 1568, 1760, 2093];
+  function bar(t, i) {
+    const c = CH[i % 4], m = MEL[i % 4], alt = Math.floor(i / 4) % 2;
+    pad(musicBus, t, c.n.slice(0, 3), 4 * beat + 1.4, .05);
+    [0, 2.5].forEach(b => pluck(musicBus, t + b * beat, c.b, 1.4, .4, { type: 'sine', harm: 0, lp: 420 }));
+    [0, 1, 2, 3, 2, 1, 2, 3].forEach((k, j) => pluck(musicBus, t + j * beat / 2 + h(), c.n[k], .9, j % 2 ? .07 : .11, { lp: 1900, harm: .15 }));
+    m.forEach(([b, f]) => { pluck(musicBus, t + b * beat + h(), f, 1.9, .26, { lp: 3000 }); if (alt) bell(musicBus, t + b * beat, f * 2, 1.6, .05); });
+    if (Math.random() < .55) bell(musicBus, t + (1 + Math.floor(Math.random() * 3)) * beat, pick(HI), 2.4, .1);
+    [1, 3, 5, 7].forEach(j => puff(musicBus, t + j * beat / 2, .05, .03, 'highpass', 6500));
+  }
+  function tick() { while (nextBar < ctx.currentTime + 1.4) { bar(nextBar, barIdx++); nextBar += 4 * beat; } }
+
+  const fileSrc = MUSIC_FILE || (typeof CONFIG !== 'undefined' && CONFIG.audio) || '';
+  const au = document.getElementById('audio');
+  let fileMode = !!fileSrc && !!au, fadeRAF;
+  function fadeAudio(to, ms) {
+    cancelAnimationFrame(fadeRAF); const from = au.volume, st = performance.now();
+    (function s() { const k = Math.min(1, (performance.now() - st) / ms); au.volume = from + (to - from) * k; if (k < 1) fadeRAF = requestAnimationFrame(s); else if (!to) au.pause(); })();
+  }
+  function startMusic() {
+    if (!musicOn || playing) return; playing = true;
+    if (fileMode) {            // ONE persistent <audio>, never recreated between screens
+      au.src = fileSrc; au.loop = true; au.volume = 0;
+      au.addEventListener('error', () => { fileMode = false; playing = false; startMusic(); }, { once: true });
+      au.play().then(() => fadeAudio(MUSIC_VOLUME, 3000)).catch(() => { playing = false; });
+      return;
+    }
+    if (!init()) { playing = false; return; }
+    if (ctx.state === 'suspended') ctx.resume();
+    const t = ctx.currentTime; musicBus.gain.cancelScheduledValues(t); musicBus.gain.setValueAtTime(.0001, t);
+    musicBus.gain.linearRampToValueAtTime(MUSIC_VOLUME, t + 3);       // gentle fade-in
+    nextBar = t + .15; clearInterval(timer); timer = setInterval(tick, 250); tick();
+  }
+  function stopMusic() {
+    if (!playing) return; playing = false;
+    if (fileMode) { fadeAudio(0, 600); return; }
+    clearInterval(timer); const t = ctx.currentTime; musicBus.gain.cancelScheduledValues(t);
+    musicBus.gain.setValueAtTime(musicBus.gain.value, t); musicBus.gain.linearRampToValueAtTime(.0001, t + .6);
+  }
+
+  /* ---------- soft, warm UI sounds (same key as the music — no beeps) ---------- */
+  const P = [523.25, 587.33, 659.25, 783.99, 880];
+  const SFX = {
+    tap: (o, t) => pluck(o, t, pick(P), .5, .45, { lp: 2000 }),
+    pop: (o, t) => pluck(o, t, pick([880, 1046.5, 1174.7]), .35, .4, { lp: 3200 }),
+    sparkle: (o, t) => [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(o, t + i * .08, f, 1.3, .4 - i * .07)),
+    reveal: (o, t) => { pad(o, t, [261.63, 329.63, 392, 493.88], 2.4, .1); [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => pluck(o, t + i * .09, f, 1.4, .4)); bell(o, t + .45, 2093, 1.8, .25); },
+    envelope: (o, t) => { puff(o, t, .28, .18, 'bandpass', 1500); puff(o, t + .08, .2, .1, 'bandpass', 2600); bell(o, t + .22, 1568, 1.4, .22); },
+    wish: (o, t) => { bell(o, t, 1046.5, 2.6, .45); bell(o, t + .3, 1568, 2.6, .3); bell(o, t + .65, 2093, 3, .18); pad(o, t, [261.63, 392, 523.25], 2.8, .06); },
+    celebration: (o, t) => { [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => pluck(o, t + i * .06, f, 1, .35)); bell(o, t + .3, 2093, 1.4, .2); },
+    final: (o, t) => { pad(o, t, [261.63, 329.63, 392], 3, .08); [261.63, 329.63, 392, 493.88, 659.25].forEach((f, i) => pluck(o, t + i * .18, f, 2.2, .38)); bell(o, t + .95, 1568, 2, .25); },
+    unlock: (o, t) => { [659.25, 987.77, 1318.5].forEach((f, i) => pluck(o, t + i * .11, f, .6, .4, { lp: 3400 })); bell(o, t + .33, 2093, 1.4, .25); },
+    send: (o, t) => { pluck(o, t, 783.99, .6, .4); pluck(o, t + .09, 1046.5, .8, .4); bell(o, t + .19, 1568, 1.4, .22); }
+  };
+  const last = {}; let active = 0;
+  function playSound(name, volume = .2) {
+    try {
+      if (!sfxOn || !init()) return;
+      if (ctx.state === 'suspended') ctx.resume();
+      const now = performance.now(); if (last[name] && now - last[name] < 70) return; last[name] = now;
+      if (active >= 5) return; active++; setTimeout(() => active--, 800);
+      const o = ctx.createGain(); o.gain.value = Math.min(volume, .4) * 1.5 * (reduce ? .6 : 1); o.connect(sfxBus);
+      if (SFX[name]) SFX[name](o, ctx.currentTime + .01);
+    } catch (e) {}
+  }
+  window.playSound = playSound;
+
+  /* ---------- toggles (music and effects are independent) ---------- */
+  const top = document.querySelector('.top');
+  if (top) {
+    const wrap = document.createElement('div'); wrap.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end';
+    top.appendChild(wrap);
+    const mkBtn = (label, get, set) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'abtn'; wrap.appendChild(b);
+      const paint = () => { b.textContent = label[get() ? 0 : 1]; b.setAttribute('aria-pressed', String(get())); b.setAttribute('aria-label', label[get() ? 2 : 3]); };
+      b.onclick = () => { set(!get()); paint(); }; paint();
+    };
+    mkBtn(['🎵 Music On', '🎵 Music Off', 'Turn background music off', 'Turn background music on'], () => musicOn, v => { musicOn = v; store('piuuu-music', v ? 'on' : 'off'); v ? (started = true, startMusic()) : stopMusic(); });
+    mkBtn(['🔊 Sfx On', '🔇 Sfx Off', 'Turn sound effects off', 'Turn sound effects on'], () => sfxOn, v => { sfxOn = v; store('piuuu-sfx', v ? 'on' : 'off'); if (v) playSound('pop', .2); });
+  }
+  document.addEventListener('visibilitychange', () => { if (!ctx) return; document.hidden ? ctx.suspend() : ((musicOn || sfxOn) && ctx.resume()); });
+
+  /* ---------- triggers (by element, so edited text still works) ---------- */
+  const screens = [...document.querySelectorAll('.screen')]; let eggN = 0;
+  document.addEventListener('click', e => {
+    if (!started) { started = true; startMusic(); }     // first interaction unlocks audio — no forced autoplay
+    const b = e.target.closest('.btn,.chip');
+    if (b) {
+      if (b.id === 'openMem') playSound('envelope', .25);
+      else if (b.id === 'wishBtn') { playSound('wish', .3); setTimeout(() => playSound('sparkle', .1), 450); setTimeout(() => playSound('celebration', .22), 650); }
+      else if (b.id === 'send') { const m = document.getElementById('msg'); playSound(m && m.value.trim() ? 'send' : 'tap', .25); }
+      else if (b.classList.contains('chip')) playSound('pop', .2);
+      else if (screens[0] && screens[0].contains(b)) playSound('sparkle', .25);
+      else if (b.hasAttribute('data-confetti')) playSound('celebration', .22);
+      else playSound('tap', .2);
+    }
+    if (e.target.closest('#egg') && ++eggN >= 5) { eggN = 0; playSound('unlock', .25); }
+  }, true);
+  screens.forEach((s, i) => {
+    let was = s.classList.contains('active');
+    new MutationObserver(() => {
+      const now = s.classList.contains('active');
+      if (now && !was) { if (i === 1) setTimeout(() => playSound('reveal', .3), 350); if (i === 5) setTimeout(() => playSound('final', .25), 500); }
+      was = now;
+    }).observe(s, { attributes: true, attributeFilter: ['class'] });
+  });
+  const mem = document.getElementById('memText');
+  if (mem) { let n = 0; new MutationObserver(m => m.forEach(r => r.addedNodes.forEach(() => playSound('sparkle', .14 * Math.pow(.7, n++))))).observe(mem, { childList: true }); }
+})();
+</script>
 </body>
 </html>
